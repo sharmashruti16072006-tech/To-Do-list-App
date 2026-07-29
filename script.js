@@ -1,134 +1,328 @@
+// Load saved tasks
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-const list = document.getElementById("taskList");
+// Load dark mode
+let darkMode = localStorage.getItem("darkMode") === "true";
 
-function save(){
-localStorage.setItem("tasks",JSON.stringify(tasks));
+// Elements
+const taskInput = document.getElementById("taskInput");
+const category = document.getElementById("category");
+const dueDate = document.getElementById("dueDate");
+const taskList = document.getElementById("taskList");
+const search = document.getElementById("search");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+const themeBtn = document.getElementById("themeBtn");
+
+// Apply dark mode
+if (darkMode) {
+    document.body.classList.add("dark");
 }
 
-function updateProgress(){
-
-let completed = tasks.filter(t=>t.done).length;
-
-let percent = tasks.length===0 ? 0 :
-Math.round(completed/tasks.length*100);
-
-document.getElementById("bar").style.width=percent+"%";
-
-document.getElementById("progressText").innerHTML=
-percent+"% Completed";
+// Save tasks
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-function display(){
+// Update progress
+function updateProgress() {
 
-list.innerHTML="";
+    let completed = tasks.filter(task => task.completed).length;
 
-let keyword=document.getElementById("search").value.toLowerCase();
+    let percent = tasks.length === 0
+        ? 0
+        : (completed / tasks.length) * 100;
 
-tasks
-.filter(t=>t.text.toLowerCase().includes(keyword))
-.forEach((task,index)=>{
+    progressBar.style.width = percent + "%";
 
-let li=document.createElement("li");
+    progressText.innerText =
+        `${completed} of ${tasks.length} Completed`;
+}
 
-li.innerHTML=`
+// Render tasks
+function renderTasks() {
 
-<div class="info ${task.done?"completed":""}">
+    taskList.innerHTML = "";
 
-<b>${task.text}</b>
+    let keyword = search.value.toLowerCase();
 
-<span class="category">${task.category}</span>
+    tasks
+    .filter(task =>
+        task.text.toLowerCase().includes(keyword)
+    )
+    .forEach((task, index) => {
 
-<span class="date">${task.date}</span>
+        const li = document.createElement("li");
 
-</div>
+        li.className =
+            task.completed ? "task completed" : "task";
 
-<div class="actions">
+        li.innerHTML = `
 
-<button class="edit">✏</button>
+        <div class="task-left">
 
-<button class="delete">🗑</button>
+            <h3>${task.text}</h3>
 
-</div>
+            <p>
+            ${task.category}
+            •
+            ${task.date || "No Date"}
+            </p>
 
-`;
+        </div>
 
-li.querySelector(".info").onclick=()=>{
+        <div class="task-right">
 
-task.done=!task.done;
+            <button class="completeBtn">
+            ✔
+            </button>
 
-save();
+            <button class="editBtn">
+            ✏
+            </button>
 
-display();
+            <button class="deleteBtn">
+            🗑
+            </button>
 
-};
+        </div>
 
-li.querySelector(".delete").onclick=()=>{
+        `;
 
-tasks.splice(index,1);
+        // Complete Task
+        li.querySelector(".completeBtn").onclick = () => {
 
-save();
+            task.completed = !task.completed;
 
-display();
+            saveTasks();
 
-};
+            renderTasks();
 
-li.querySelector(".edit").onclick=()=>{
+        };
 
-let value=prompt("Edit Task",task.text);
+        // Delete Task
+        li.querySelector(".deleteBtn").onclick = () => {
 
-if(value){
+            if(confirm("Delete this task?")){
 
-task.text=value;
+                tasks.splice(index,1);
 
-save();
+                saveTasks();
 
-display();
+                renderTasks();
+
+            }
+
+        };
+
+        taskList.appendChild(li);
+
+    });
+
+    updateProgress();
 
 }
 
-};
-
-list.appendChild(li);
-
-});
-
-updateProgress();
-
-}
-
+// Add Task
 function addTask(){
 
-let text=document.getElementById("taskInput").value.trim();
+    let text = taskInput.value.trim();
 
-if(text=="") return;
+    if(text===""){
 
-tasks.push({
+        alert("Please enter a task.");
 
-text,
+        return;
 
-category:document.getElementById("category").value,
+    }
 
-date:document.getElementById("date").value,
+    tasks.push({
 
-done:false
+        text:text,
 
-});
+        category:category.value,
 
-document.getElementById("taskInput").value="";
+        date:dueDate.value,
 
-save();
+        completed:false
 
-display();
+    });
+
+    taskInput.value="";
+
+    dueDate.value="";
+
+    saveTasks();
+
+    renderTasks();
 
 }
 
-document.getElementById("search").onkeyup=display;
+// Search
+search.addEventListener("keyup", renderTasks);
 
-document.getElementById("themeBtn").onclick=()=>{
+// Initial Load
+renderTasks();
 
-document.body.classList.toggle("dark");
+function editTask(index){
+
+    let newTask = prompt("Edit Task", tasks[index].text);
+
+    if(newTask !== null){
+
+        newTask = newTask.trim();
+
+        if(newTask !== ""){
+
+            tasks[index].text = newTask;
+
+            saveTasks();
+
+            renderTasks();
+
+        }
+
+    }
+
+}
+
+
+// Override renderTasks
+
+function renderTasks(){
+
+    taskList.innerHTML = "";
+
+    let keyword = search.value.toLowerCase();
+
+    let completed = 0;
+
+    tasks.forEach((task,index)=>{
+
+        if(
+            !task.text.toLowerCase().includes(keyword)
+        ){
+            return;
+        }
+
+        if(task.completed){
+            completed++;
+        }
+
+        let li = document.createElement("li");
+
+        li.className = task.completed
+            ? "task completed"
+            : "task";
+
+        li.innerHTML = `
+
+        <div class="task-left">
+
+            <h3>${task.text}</h3>
+
+            <p>
+            ${task.category}
+            •
+            ${task.date || "No Due Date"}
+            </p>
+
+        </div>
+
+        <div class="task-right">
+
+            <button class="completeBtn">
+            <i class="fa-solid fa-check"></i>
+            </button>
+
+            <button class="editBtn">
+            <i class="fa-solid fa-pen"></i>
+            </button>
+
+            <button class="deleteBtn">
+            <i class="fa-solid fa-trash"></i>
+            </button>
+
+        </div>
+
+        `;
+
+        // Complete
+        li.querySelector(".completeBtn").onclick=()=>{
+
+            tasks[index].completed =
+            !tasks[index].completed;
+
+            saveTasks();
+
+            renderTasks();
+
+        };
+
+        // Delete
+        li.querySelector(".deleteBtn").onclick=()=>{
+
+            if(confirm("Delete this task?")){
+
+                tasks.splice(index,1);
+
+                saveTasks();
+
+                renderTasks();
+
+            }
+
+        };
+
+        // Edit
+        li.querySelector(".editBtn").onclick=()=>{
+
+            editTask(index);
+
+        };
+
+        taskList.appendChild(li);
+
+    });
+
+    let percent =
+    tasks.length==0
+    ?0
+    :(completed/tasks.length)*100;
+
+    progressBar.style.width =
+    percent+"%";
+
+    progressText.innerHTML =
+    `${completed} of ${tasks.length} Completed`;
+
+}
+
+
+// Dark Mode
+
+
+themeBtn.onclick=()=>{
+
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+
+        "darkMode",
+
+        document.body.classList.contains("dark")
+
+    );
 
 };
 
-display();
+taskInput.addEventListener("keypress",function(e){
+
+    if(e.key==="Enter"){
+
+        addTask();
+    }
+}) 
+  
+
+renderTasks();
