@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TaskMaster Pro</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="top">
+
+<h1>TaskMaster Pro</h1>
+
+<button id="themeBtn">
+<i class="fa-solid fa-moon"></i>
+</button>
+
+</div>
+
+<div class="controls">
+
+<input
+type="text"
+id="taskInput"
+placeholder="Enter your task">
+
+<select id="category">
+
+<option>Study</option>
+
+<option>Work</option>
+
+<option>Personal</option>
+
+</select>
+
+<input type="date" id="date">
+
+<button onclick="addTask()">
+
+<i class="fa-solid fa-plus"></i>
+
+</button>
+
+</div>
+
+<input
+type="text"
+id="search"
+placeholder="Search Task...">
+
+<div class="progressBox">
+
+<div class="progress">
+
+<div id="bar"></div>
+
+</div>
+
+<p id="progressText">0% Completed</p>
+
+</div>
+
+<ul id="taskList"></ul>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
